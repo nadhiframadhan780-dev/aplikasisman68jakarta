@@ -88,9 +88,9 @@ const DOM = {
 // YOUTUBE PLAYER - PUTAR BERURUTAN
 // ============================================
 const videoList = [
-    'hDZ3-jZ4Rnw',  // ID Video 1
-    'cBbahZk3mMc',    // ID Video 2 (GANTI dengan ID video kedua)
-    '9D_JcXY4Sr8'    // ID Video 3 (GANTI dengan ID video ketiga)
+    'hDZ3-jZ4Rnw',
+    'cBbahZk3mMc',
+    '9D_JcXY4Sr8'
 ];
 
 let currentVideoIndex = 0;
@@ -99,20 +99,13 @@ function onYouTubeIframeAPIReady() {
     player = new YT.Player('youtubePlayer', {
         videoId: videoList[currentVideoIndex],
         playerVars: {
-            autoplay: 1,
-            mute: 1,
-            controls: 0,
-            loop: 1,
-            playlist: videoList.join(','), // Playlist kedua video
-            modestbranding: 1,
-            rel: 0,
-            showinfo: 0,
-            iv_load_policy: 3
+            autoplay: 1, mute: 1, controls: 0, loop: 1,
+            playlist: videoList.join(','),
+            modestbranding: 1, rel: 0, showinfo: 0, iv_load_policy: 3
         },
         events: {
             onReady: () => player.playVideo(),
             onStateChange: (event) => {
-                // Saat video selesai, putar video berikutnya
                 if (event.data === 0) {
                     currentVideoIndex = (currentVideoIndex + 1) % videoList.length;
                     player.loadVideoById(videoList[currentVideoIndex]);
@@ -156,6 +149,9 @@ function initializeApp() {
     setupRealtimeListeners();
     populateYearSelect();
     checkChatStatus();
+    
+    // 🔔 Tampilkan popup notifikasi
+    showNotificationPopup();
 }
 
 // ============================================
@@ -351,20 +347,13 @@ function createNewsCard(id, data) {
 
 function showNewsDetail(data, date) {
     if (!DOM.newsModal || !DOM.newsModalBody) return;
-    
-    // Ubah konten jadi paragraf yang rapi
     let contentHtml = data.content || 'Konten lengkap akan segera tersedia.';
     if (contentHtml.includes('\n')) {
-        contentHtml = contentHtml
-            .split('\n\n')
-            .map(p => p.trim())
-            .filter(p => p.length > 0)
-            .map(p => `<p style="margin-bottom:20px;line-height:1.9;color:var(--dark-gray);text-indent:30px;">${p.replace(/\n/g, '<br>')}</p>`)
-            .join('');
+        contentHtml = contentHtml.split('\n\n').map(p => p.trim()).filter(p => p.length > 0)
+            .map(p => `<p style="margin-bottom:20px;line-height:1.9;color:var(--dark-gray);text-indent:30px;">${p.replace(/\n/g, '<br>')}</p>`).join('');
     } else {
         contentHtml = `<p style="margin-bottom:20px;line-height:1.9;color:var(--dark-gray);text-indent:30px;">${contentHtml}</p>`;
     }
-    
     DOM.newsModalBody.innerHTML = `
         <h2 style="color:var(--dark);margin-bottom:10px;font-size:1.5rem;font-weight:700;">${data.title}</h2>
         <div style="display:flex;gap:20px;margin-bottom:25px;color:var(--primary-blue);font-size:0.9rem;">
@@ -421,10 +410,7 @@ async function loadGalleryData() {
 function createGalleryItem(data) {
     const item = document.createElement('div');
     item.className = 'gallery-item';
-    item.innerHTML = `
-        <img src="${data.imageUrl}" alt="${data.caption}" loading="lazy">
-        <div class="gallery-overlay"><i class="fas fa-search-plus"></i><p>${data.caption}</p></div>
-    `;
+    item.innerHTML = `<img src="${data.imageUrl}" alt="${data.caption}" loading="lazy"><div class="gallery-overlay"><i class="fas fa-search-plus"></i><p>${data.caption}</p></div>`;
     item.addEventListener('click', () => showLightbox(data.imageUrl, data.caption));
     return item;
 }
@@ -455,11 +441,7 @@ function createTestimonialCard(data) {
     card.className = 'testimonial-card';
     const stars = '★'.repeat(data.stars || 5) + '☆'.repeat(5 - (data.stars || 5));
     const initials = (data.author || 'A').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-    card.innerHTML = `
-        <div class="testimonial-stars">${stars}</div>
-        <p class="testimonial-text">"${data.text}"</p>
-        <div class="testimonial-author"><div class="author-avatar">${initials}</div><div class="author-info"><h4>${data.author}</h4><p>${data.role}</p></div></div>
-    `;
+    card.innerHTML = `<div class="testimonial-stars">${stars}</div><p class="testimonial-text">"${data.text}"</p><div class="testimonial-author"><div class="author-avatar">${initials}</div><div class="author-info"><h4>${data.author}</h4><p>${data.role}</p></div></div>`;
     return card;
 }
 
@@ -500,7 +482,7 @@ async function loadOperationalHours() {
 }
 
 // ============================================
-// CHECK CHAT STATUS (ONLINE/OFFLINE)
+// CHECK CHAT STATUS
 // ============================================
 async function checkChatStatus() {
     try {
@@ -508,16 +490,11 @@ async function checkChatStatus() {
         isChatOnline = doc.exists ? (doc.data().isOnline !== false) : true;
         updateChatUI();
     } catch (e) { isChatOnline = true; updateChatUI(); }
-    
-    // Real-time listener
     db.collection('settings').doc('chatStatus').onSnapshot(doc => {
         if (doc.exists) {
             isChatOnline = doc.data().isOnline !== false;
             updateChatUI();
-            if (!isChatOnline && chatSession) {
-                showToast('Helpdesk telah offline. Chat akan diakhiri.', 'error');
-                endChatSession();
-            }
+            if (!isChatOnline && chatSession) { showToast('Helpdesk telah offline.', 'error'); endChatSession(); }
         }
     });
 }
@@ -526,23 +503,15 @@ function updateChatUI() {
     const statusText = document.getElementById('chatStatusText');
     const offlineEl = document.getElementById('chatOffline');
     const registration = document.getElementById('chatRegistration');
-    
-    if (statusText) {
-        statusText.innerHTML = isChatOnline ? '<span class="online-dot"></span> Online' : '<span style="color:#ef4444;">●</span> Offline';
-    }
+    if (statusText) statusText.innerHTML = isChatOnline ? '<span class="online-dot"></span> Online' : '<span style="color:#ef4444;">●</span> Offline';
     if (offlineEl && registration) {
-        if (isChatOnline) {
-            offlineEl.style.display = 'none';
-            registration.style.display = 'block';
-        } else {
-            offlineEl.style.display = 'block';
-            registration.style.display = 'none';
-        }
+        if (isChatOnline) { offlineEl.style.display = 'none'; registration.style.display = 'block'; }
+        else { offlineEl.style.display = 'block'; registration.style.display = 'none'; }
     }
 }
 
 // ============================================
-// LIVE CHAT (UPDATED)
+// LIVE CHAT
 // ============================================
 function initializeLiveChat() {
     const toggle = document.getElementById('livechatToggle');
@@ -564,37 +533,17 @@ function initializeLiveChat() {
     
     form?.addEventListener('submit', async e => {
         e.preventDefault();
-        
-        if (!isChatOnline) {
-            showToast('Helpdesk sedang offline. Silakan coba lagi nanti.', 'error');
-            return;
-        }
-        
+        if (!isChatOnline) { showToast('Helpdesk sedang offline.', 'error'); return; }
         const name = document.getElementById('chatName').value.trim();
         const phone = document.getElementById('chatPhone').value.trim();
         const status = document.getElementById('chatStatusSelect').value;
-        
         if (!name || !phone || !status) { showToast('Mohon isi semua field', 'error'); return; }
-        
         currentUser = { name, phone, status };
-        
         try {
-            const sessionRef = await db.collection('chatSessions').add({
-                userName: name, userPhone: phone, userStatus: status,
-                startedAt: firebase.firestore.FieldValue.serverTimestamp(), status: 'active'
-            });
-            
-            chatSession = sessionRef.id;
-            chatEnded = false;
-            
+            const sessionRef = await db.collection('chatSessions').add({ userName: name, userPhone: phone, userStatus: status, startedAt: firebase.firestore.FieldValue.serverTimestamp(), status: 'active' });
+            chatSession = sessionRef.id; chatEnded = false;
             subscribeToMessages(chatSession);
-            
-            registration.style.display = 'none';
-            messages.style.display = 'block';
-            footer.style.display = 'flex';
-            endedNotification.style.display = 'none';
-            messageList.innerHTML = '';
-            
+            registration.style.display = 'none'; messages.style.display = 'block'; footer.style.display = 'flex'; endedNotification.style.display = 'none'; messageList.innerHTML = '';
             addBotMessage('Terima kasih telah menghubungi helpdesk SMAN 68 JAKARTA, operator segera membalas pertanyaan atau keluhan anda, silahkan kirimkan pesan pertanyaan atau keluhan.');
             showToast('Chat dimulai!', 'success');
         } catch (error) { showToast('Gagal memulai chat', 'error'); }
@@ -605,116 +554,50 @@ function initializeLiveChat() {
     
     endBtn?.addEventListener('click', async () => {
         if (!chatSession || chatEnded) return;
-        
         try {
-            await db.collection('chatSessions').doc(chatSession).update({
-                status: 'ended', endedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            
-            chatEnded = true;
-            input.disabled = true;
-            sendBtn.disabled = true;
-            endBtn.disabled = true;
-            
-            // Tampilkan notifikasi chat berakhir
-            messages.style.display = 'none';
-            footer.style.display = 'none';
-            endedNotification.style.display = 'block';
-            
+            await db.collection('chatSessions').doc(chatSession).update({ status: 'ended', endedAt: firebase.firestore.FieldValue.serverTimestamp() });
+            chatEnded = true; input.disabled = true; sendBtn.disabled = true; endBtn.disabled = true;
+            messages.style.display = 'none'; footer.style.display = 'none'; endedNotification.style.display = 'block';
             showToast('Chat telah diakhiri.', 'success');
         } catch (error) { showToast('Gagal mengakhiri chat', 'error'); }
     });
     
-    // Tombol Mulai Obrolan Baru
-    btnNewChat?.addEventListener('click', () => {
-        resetChat();
-    });
+    btnNewChat?.addEventListener('click', resetChat);
     
     function sendChatMessage() {
         const message = input.value.trim();
         if (!message || !chatSession || chatEnded) return;
-        
-        db.collection('chatSessions').doc(chatSession).collection('messages').add({
-            sender: 'user', senderName: currentUser.name, message,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(() => showToast('Gagal mengirim pesan', 'error'));
-        
-        addUserMessage(message);
-        input.value = '';
+        db.collection('chatSessions').doc(chatSession).collection('messages').add({ sender: 'user', senderName: currentUser.name, message, timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(() => showToast('Gagal mengirim pesan', 'error'));
+        addUserMessage(message); input.value = '';
     }
     
     function subscribeToMessages(sessionId) {
-        db.collection('chatSessions').doc(sessionId).collection('messages')
-            .orderBy('timestamp', 'asc')
-            .onSnapshot(snapshot => {
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added' && change.doc.data().sender === 'operator') {
-                        addOperatorMessage(change.doc.data().message);
-                    }
-                });
-            });
-        
+        db.collection('chatSessions').doc(sessionId).collection('messages').orderBy('timestamp', 'asc').onSnapshot(snapshot => {
+            snapshot.docChanges().forEach(change => { if (change.type === 'added' && change.doc.data().sender === 'operator') addOperatorMessage(change.doc.data().message); });
+        });
         db.collection('chatSessions').doc(sessionId).onSnapshot(doc => {
             if (doc.exists && doc.data().status === 'ended' && !chatEnded) {
-                chatEnded = true;
-                input.disabled = true;
-                sendBtn.disabled = true;
-                endBtn.disabled = true;
-                messages.style.display = 'none';
-                footer.style.display = 'none';
-                endedNotification.style.display = 'block';
+                chatEnded = true; input.disabled = true; sendBtn.disabled = true; endBtn.disabled = true;
+                messages.style.display = 'none'; footer.style.display = 'none'; endedNotification.style.display = 'block';
             }
         });
     }
     
-    function addUserMessage(msg) {
-        const div = document.createElement('div');
-        div.className = 'message-user';
-        div.innerHTML = `<div>${msg}</div>`;
-        messageList.appendChild(div);
-        messageList.scrollTop = messageList.scrollHeight;
-    }
-    
-    function addOperatorMessage(msg) {
-        const div = document.createElement('div');
-        div.className = 'message-operator';
-        div.innerHTML = `<div>${msg}</div>`;
-        messageList.appendChild(div);
-        messageList.scrollTop = messageList.scrollHeight;
-    }
-    
-    function addBotMessage(msg) {
-        const div = document.createElement('div');
-        div.className = 'message-bot';
-        div.textContent = msg;
-        messageList.appendChild(div);
-    }
+    function addUserMessage(msg) { const div = document.createElement('div'); div.className = 'message-user'; div.innerHTML = `<div>${msg}</div>`; messageList.appendChild(div); messageList.scrollTop = messageList.scrollHeight; }
+    function addOperatorMessage(msg) { const div = document.createElement('div'); div.className = 'message-operator'; div.innerHTML = `<div>${msg}</div>`; messageList.appendChild(div); messageList.scrollTop = messageList.scrollHeight; }
+    function addBotMessage(msg) { const div = document.createElement('div'); div.className = 'message-bot'; div.textContent = msg; messageList.appendChild(div); }
     
     function resetChat() {
-        registration.style.display = 'block';
-        messages.style.display = 'none';
-        footer.style.display = 'none';
-        endedNotification.style.display = 'none';
-        messageList.innerHTML = '';
-        document.getElementById('chatRegForm').reset();
-        chatSession = null;
-        currentUser = null;
-        chatEnded = false;
-        input.disabled = false;
-        sendBtn.disabled = false;
-        endBtn.disabled = false;
+        registration.style.display = 'block'; messages.style.display = 'none'; footer.style.display = 'none'; endedNotification.style.display = 'none'; messageList.innerHTML = '';
+        document.getElementById('chatRegForm').reset(); chatSession = null; currentUser = null; chatEnded = false;
+        input.disabled = false; sendBtn.disabled = false; endBtn.disabled = false;
     }
 }
 
 function endChatSession() {
-    // Client-side reset
     chatEnded = true;
-    document.getElementById('chatInput').disabled = true;
-    document.getElementById('sendMessageBtn').disabled = true;
-    document.getElementById('endChatBtn').disabled = true;
-    document.getElementById('chatMessages').style.display = 'none';
-    document.getElementById('chatFooter').style.display = 'none';
-    document.getElementById('chatEndedNotification').style.display = 'block';
+    document.getElementById('chatInput').disabled = true; document.getElementById('sendMessageBtn').disabled = true; document.getElementById('endChatBtn').disabled = true;
+    document.getElementById('chatMessages').style.display = 'none'; document.getElementById('chatFooter').style.display = 'none'; document.getElementById('chatEndedNotification').style.display = 'block';
 }
 
 // ============================================
@@ -723,59 +606,38 @@ function endChatSession() {
 function initializeFeedback() {
     const form = document.getElementById('feedbackForm');
     const historyBtn = document.getElementById('showHistoryBtn');
-    
     form?.addEventListener('submit', async e => {
         e.preventDefault();
         const name = document.getElementById('feedbackName').value.trim() || 'Anonymous';
         const email = document.getElementById('feedbackEmail').value.trim();
         const category = document.getElementById('feedbackCategory').value;
         const message = document.getElementById('feedbackMessage').value.trim();
-        
         if (!email || !category || !message) { showToast('Mohon isi semua field wajib', 'error'); return; }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Format email tidak valid', 'error'); return; }
-        
         try {
-            await db.collection('feedbacks').add({
-                name, email, category, message, status: 'pending',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(), replies: []
-            });
-            showToast('✅ Pesan akan direspon dalam 1x24 jam. Terima kasih!', 'success');
-            form.reset();
+            await db.collection('feedbacks').add({ name, email, category, message, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp(), replies: [] });
+            showToast('✅ Pesan akan direspon dalam 1x24 jam. Terima kasih!', 'success'); form.reset();
         } catch (error) { showToast('❌ Terjadi kesalahan', 'error'); }
     });
-    
     historyBtn?.addEventListener('click', () => DOM.historyModal?.classList.add('active'));
 }
 
 function initializeHistoryModal() {
-    const closeBtn = DOM.historyModal?.querySelector('.history-close');
-    const loadBtn = document.getElementById('loadHistoryBtn');
-    
-    closeBtn?.addEventListener('click', () => DOM.historyModal?.classList.remove('active'));
+    DOM.historyModal?.querySelector('.history-close')?.addEventListener('click', () => DOM.historyModal?.classList.remove('active'));
     DOM.historyModal?.addEventListener('click', e => { if (e.target === DOM.historyModal) DOM.historyModal.classList.remove('active'); });
-    
-    loadBtn?.addEventListener('click', async () => {
+    document.getElementById('loadHistoryBtn')?.addEventListener('click', async () => {
         const email = document.getElementById('historyEmail').value.trim();
         if (!email) { showToast('Masukkan email Anda', 'error'); return; }
-        
         try {
             const snapshot = await db.collection('feedbacks').where('email', '==', email).orderBy('createdAt', 'desc').get();
-            if (!DOM.historyList) return;
-            DOM.historyList.innerHTML = '';
-            
+            if (!DOM.historyList) return; DOM.historyList.innerHTML = '';
             if (snapshot.empty) { DOM.historyList.innerHTML = '<p style="text-align:center;padding:20px;">Tidak ada riwayat</p>'; return; }
-            
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const date = data.createdAt ? new Date(data.createdAt.toDate()).toLocaleString('id-ID') : '';
                 const repliesHtml = data.replies?.map(r => `<div style="background:#e8f5e9;padding:10px;border-radius:8px;margin-top:8px;"><strong>Balasan:</strong><br>${r.message}</div>`).join('') || '';
-                
-                const item = document.createElement('div');
-                item.className = 'history-item';
-                item.innerHTML = `
-                    <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><strong>${data.category}</strong><small>${date}</small></div>
-                    <p>${data.message}</p>${repliesHtml}
-                `;
+                const item = document.createElement('div'); item.className = 'history-item';
+                item.innerHTML = `<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><strong>${data.category}</strong><small>${date}</small></div><p>${data.message}</p>${repliesHtml}`;
                 DOM.historyList.appendChild(item);
             });
         } catch (error) { showToast('Gagal memuat riwayat', 'error'); }
@@ -790,7 +652,6 @@ function initializeTutorial() {
     document.getElementById('tutorialClose')?.addEventListener('click', () => DOM.tutorialModal?.classList.remove('active'));
     DOM.tutorialModal?.addEventListener('click', e => { if (e.target === DOM.tutorialModal) DOM.tutorialModal.classList.remove('active'); });
 }
-
 function initializePrivacy() {
     document.getElementById('privacyLink')?.addEventListener('click', e => { e.preventDefault(); DOM.privacyModal?.classList.add('active'); });
     DOM.privacyModal?.querySelector('.privacy-close')?.addEventListener('click', () => DOM.privacyModal?.classList.remove('active'));
@@ -802,11 +663,9 @@ function initializePrivacy() {
 // ============================================
 function showToast(message, type = 'success') {
     if (!DOM.toastContainer) return;
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
+    const toast = document.createElement('div'); toast.className = `toast ${type}`;
     toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i><span>${message}</span>`;
-    DOM.toastContainer.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
+    DOM.toastContainer.appendChild(toast); setTimeout(() => toast.remove(), 4000);
 }
 
 // ============================================
@@ -823,49 +682,47 @@ function setupRealtimeListeners() {
 }
 
 // ============================================
-// PUSH NOTIFICATION - MINTA IZIN
+// PUSH NOTIFICATION
 // ============================================
 function requestNotificationPermission() {
-    if (!('Notification' in window)) {
-        console.log('Browser tidak mendukung notifikasi');
-        return;
-    }
-    
-    // Cek apakah sudah pernah ditanya
-    if (Notification.permission === 'granted') {
-        console.log('✅ Notifikasi sudah diizinkan');
-        subscribeToPushNotification();
-        return;
-    }
-    
-    if (Notification.permission === 'denied') {
-        console.log('❌ Notifikasi ditolak');
-        return;
-    }
-    
-    // Tampilkan popup minta izin (hanya muncul sekali)
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') { subscribeToPushNotification(); return; }
+    if (Notification.permission === 'denied') return;
     Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-            console.log('✅ Notifikasi diizinkan!');
-            subscribeToPushNotification();
-            // Tampilkan notifikasi selamat datang
-            showWelcomeNotification();
-        } else {
-            console.log('❌ Notifikasi ditolak');
-        }
+        if (permission === 'granted') { subscribeToPushNotification(); showWelcomeNotification(); }
     });
 }
 
-// Tampilkan notifikasi selamat datang
 function showWelcomeNotification() {
     if (Notification.permission === 'granted') {
-        new Notification('✅ Notifikasi Diaktifkan!', {
-            body: 'Anda akan menerima notifikasi berita terbaru, agenda, dan informasi penting dari SMAN 68 Jakarta.',
-            icon: 'https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png',
-            badge: 'https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png',
-            vibrate: [200, 100, 200]
-        });
+        new Notification('✅ Notifikasi Diaktifkan!', { body: 'Anda akan menerima notifikasi berita, agenda, dan informasi penting dari SMAN 68 Jakarta.', icon: 'https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png', badge: 'https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png', vibrate: [200, 100, 200] });
     }
+}
+
+async function subscribeToPushNotification() {
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: 'BNSTmdE2n3cWDnvn9i_pW6Cl40lVYkdYDjJW9JmI1xKa-lDBV-AR_UYF4tQjNP9exrlAjWiqBWvW2mrzFqMftuY' });
+        console.log('✅ Subscribed to push');
+        await db.collection('pushSubscriptions').add({ subscription: JSON.parse(JSON.stringify(subscription)), createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    } catch (error) { console.log('❌ Gagal subscribe'); }
+}
+
+function showLocalNotification(title, body, tag) {
+    if (Notification.permission === 'granted') {
+        new Notification(title, { body: body, icon: 'https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png', badge: 'https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png', tag: tag || 'sman68', vibrate: [200, 100, 200] });
+    }
+}
+
+function showNotificationPopup() {
+    const hasAsked = localStorage.getItem('notificationAsked');
+    if (hasAsked || Notification.permission === 'granted' || Notification.permission === 'denied') return;
+    const popup = document.createElement('div');
+    popup.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:white;padding:20px 25px;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3);z-index:99999;display:flex;align-items:center;gap:15px;max-width:450px;width:90%;';
+    popup.innerHTML = `<i class="fas fa-bell" style="font-size:2rem;color:#006633;"></i><div style="flex:1;"><p style="font-weight:700;color:#1e293b;margin-bottom:3px;">Aktifkan Notifikasi</p><p style="font-size:0.85rem;color:#64748b;">Dapatkan info terbaru berita, agenda, dan pengumuman penting SMAN 68 Jakarta.</p></div><button id="allowNotifBtn" style="padding:10px 20px;background:#006633;color:white;border:none;border-radius:50px;font-weight:600;cursor:pointer;white-space:nowrap;">Izinkan</button><button id="denyNotifBtn" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1.2rem;">&times;</button>`;
+    document.body.appendChild(popup);
+    document.getElementById('allowNotifBtn').addEventListener('click', () => { popup.remove(); localStorage.setItem('notificationAsked','true'); requestNotificationPermission(); });
+    document.getElementById('denyNotifBtn').addEventListener('click', () => { popup.remove(); localStorage.setItem('notificationAsked','true'); });
 }
 
 console.log('✅ SMAN 68 Jakarta - Website Updated Successfully');
