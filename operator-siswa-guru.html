@@ -16,6 +16,34 @@
     
     <!-- Favicon -->
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png">
+
+    <!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Theme Color -->
+<meta name="theme-color" content="#006633">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SMAN 68">
+
+<!-- Apple Touch Icon -->
+<link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png">
+
+<!-- Service Worker -->
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('✅ ServiceWorker registered: ', registration.scope);
+                })
+                .catch(error => {
+                    console.log('❌ ServiceWorker registration failed: ', error);
+                });
+        });
+    }
+</script>
     
     <!-- Styles -->
     <link rel="stylesheet" href="operator-siswa-guru.css">
