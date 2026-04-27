@@ -822,4 +822,50 @@ function setupRealtimeListeners() {
     db.collection('settings').doc('operationalHours').onSnapshot(() => loadOperationalHours());
 }
 
+// ============================================
+// PUSH NOTIFICATION - MINTA IZIN
+// ============================================
+function requestNotificationPermission() {
+    if (!('Notification' in window)) {
+        console.log('Browser tidak mendukung notifikasi');
+        return;
+    }
+    
+    // Cek apakah sudah pernah ditanya
+    if (Notification.permission === 'granted') {
+        console.log('✅ Notifikasi sudah diizinkan');
+        subscribeToPushNotification();
+        return;
+    }
+    
+    if (Notification.permission === 'denied') {
+        console.log('❌ Notifikasi ditolak');
+        return;
+    }
+    
+    // Tampilkan popup minta izin (hanya muncul sekali)
+    Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+            console.log('✅ Notifikasi diizinkan!');
+            subscribeToPushNotification();
+            // Tampilkan notifikasi selamat datang
+            showWelcomeNotification();
+        } else {
+            console.log('❌ Notifikasi ditolak');
+        }
+    });
+}
+
+// Tampilkan notifikasi selamat datang
+function showWelcomeNotification() {
+    if (Notification.permission === 'granted') {
+        new Notification('✅ Notifikasi Diaktifkan!', {
+            body: 'Anda akan menerima notifikasi berita terbaru, agenda, dan informasi penting dari SMAN 68 Jakarta.',
+            icon: 'https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png',
+            badge: 'https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png',
+            vibrate: [200, 100, 200]
+        });
+    }
+}
+
 console.log('✅ SMAN 68 Jakarta - Website Updated Successfully');
