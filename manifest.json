@@ -1,0 +1,60 @@
+{
+    "name": "SMAN 68 Jakarta",
+    "short_name": "SMAN 68",
+    "description": "Website Resmi SMA Negeri 68 Jakarta - Disiplin, Kreasi, Prestasi",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#006633",
+    "theme_color": "#006633",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://upload.wikimedia.org/wikipedia/id/1/19/Logo_SMAN_68_Jakarta.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
